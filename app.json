@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "projectReactNativeSuap",
+    "slug": "projectReactNativeSuap",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "projectReactNativeSuap"
+}
