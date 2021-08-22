@@ -1,7 +1,8 @@
 {
   "expo": {
     "name": "projectReactNativeSuap",
-    "slug": "projectReactNativeSuap",
+    "slug": "ifrndo",
+    "scheme": "ifrndo",
     "version": "1.0.0",
     "assetBundlePatterns": [
       "**/*"
