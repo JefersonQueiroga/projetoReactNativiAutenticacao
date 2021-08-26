@@ -7,7 +7,7 @@ const AppStack = createStackNavigator();
 // rotas para os usuários logados
 export function AppRoutes(){
     return(
-        <AppStack.Navigator>
+        <AppStack.Navigator screenOptions={{ headerShown: false}}>
             <AppStack.Screen name="Home" component={Home}/>
         </AppStack.Navigator>
     )

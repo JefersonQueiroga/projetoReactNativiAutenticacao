@@ -4,79 +4,56 @@ import { View,
     Text,
     Image, 
     TouchableOpacity,
+    ActivityIndicator,
     Alert} from 'react-native';
 import Logo from '../assets/logo.png';
-import api from '../services/Api';
 import { Input } from '../components/Input';
 import { AntDesign } from '@expo/vector-icons'; 
-import * as AuthSession from 'expo-auth-session';
+import { useAuth } from '../context/Auth';
 
 export function Login(){
     const [matricula, setMatricula] = useState('');
     const [password, setPassword] = useState('');
+    const {signWithGoogle,signWithSUAP} = useAuth();
+    const[isLoading,setIsLoading] = useState(false);
 
-    
-    async function handleSignWithGoogle(){
+    async function handleLoginGoogle(){
         try{
-        const {CLIENT_ID} = process.env;
-        const {REDIRECT_URI}= process.env;
-        const RESPONSE_TYPE='token'
-        const SCOPE = encodeURI('profile email')
-        const authUrl =`https://accounts.google.com/o/oauth2/v2/auth?client_id=${ CLIENT_ID }&redirect_uri=${ REDIRECT_URI }&response_type=${RESPONSE_TYPE}&scope=${SCOPE}`;
-        
-    
-        const {type,params} = await AuthSession.startAsync({ authUrl }) 
-        console.log(type);    
-      
-        if(type==='success'){
-       
-            const response = await fetch(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${params.access_token}`);
-            const userInfo = await response.json();
-          
-            const userLogged = {
-                id: userInfo.id,
-                email: userInfo.email,
-                name: userInfo.name,
-                photo: userInfo.picture                
-            }
-
-            console.log( userLogged );
-        }
-        
+           setIsLoading(true);
+           return await signWithGoogle();
         }catch(error){
-            Alert.alert("Error na autenticação do Google.");
-        }    
+            setIsLoading(false);
+            console.log(error);
+        }   
     }
 
-    /**
-     * Função para realizar chamada ao suap
-     */
-    async function handleLogin(){
-        
-        var params = new URLSearchParams();
-        params.append('username', matricula);
-        params.append('password', password);
-        try{
-            const response =  await api.post('autenticacao/token/', params );
-            const { token } = response.data;
-
-            const responseUser =  await api.get('/minhas-informacoes/meus-dados/', { 
-                headers:{
-                    'authorization': 'jwt ' + token,
-                    'Accept' : 'application/json',
-                    'Content-Type': 'application/json'    
-                }
-            } );
-
-            console.log(responseUser.data);
-        }catch{
-            Alert.alert("Erro na autenticação");
+    
+    async function handleLoginSuap(){
+        if(!password || !matricula){
+            Alert.alert("Informe todos os dados");
         }
+      
+        try{
+            setIsLoading(true);
+            return await signWithSUAP(matricula,password);
+         }catch(error){
+             console.log(error);
+             setIsLoading(false);
+         } 
+
+
     }
 
-
+    if(isLoading){
+        return(
+            <View style={{ flex: 1, justifyContent: 'center',alignItems: 'center' }}>
+                <ActivityIndicator size="large" color="#0000ff"/>
+            </View>
+        )
+    }  
 
     return(
+
         <View style={styles.container}>
              <View>
                  <Image source={Logo} style={styles.image}/>   
@@ -86,12 +63,12 @@ export function Login(){
              <View style={styles.form}>
                 <Input placeholder="Matrícula" onChangeText={x => setMatricula(x)} />
                 <Input placeholder="Senha" secureTextEntry={true} onChangeText={x => setPassword(x)}/>
-                <TouchableOpacity style={styles.styleButton} onPress={ handleLogin }>
+                <TouchableOpacity style={styles.styleButton} onPress={ handleLoginSuap }>
                     <Text style={styles.textButton}>Entrar</Text>
                 </TouchableOpacity>
              </View>
                           
-            <TouchableOpacity style={ styles.buttonGoogleSocial  } onPress={handleSignWithGoogle}> 
+            <TouchableOpacity style={ styles.buttonGoogleSocial  } onPress={handleLoginGoogle}> 
                 <AntDesign name="google" size={30} color="#FEFEFE" />
                 <Text style={styles.textButtonGoogle}>Login com Google</Text>
             </TouchableOpacity>
