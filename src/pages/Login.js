@@ -10,12 +10,22 @@ import Logo from '../assets/logo.png';
 import { Input } from '../components/Input';
 import { AntDesign } from '@expo/vector-icons'; 
 import { useAuth } from '../context/Auth';
+import { useForm } from 'react-hook-form'
+import * as Yup from 'yup';
 
 export function Login(){
     const [matricula, setMatricula] = useState('');
     const [password, setPassword] = useState('');
+    // Pegando os dados do context 
     const {signWithGoogle,signWithSUAP} = useAuth();
     const[isLoading,setIsLoading] = useState(false);
+   
+    //Será utilizado para pegar para subtmeter 
+    const { control, handleSubmit, reset, formState: {errors} } = useForm();
+
+    function escrevendo(x){
+        consolo.log(x);
+    }
 
     async function handleLoginGoogle(){
         try{
@@ -30,7 +40,7 @@ export function Login(){
     
     async function handleLoginSuap(){
         if(!password || !matricula){
-            Alert.alert("Informe todos os dados");
+            return Alert.alert("Informe todos os dados");
         }
       
         try{

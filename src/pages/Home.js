@@ -1,4 +1,11 @@
-import React,{useContext, } from 'react';
+import React,{useState,useEffect} from 'react';
+import { AntDesign } from '@expo/vector-icons'; 
+import { Entypo } from '@expo/vector-icons'; 
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import * as ImagePicker from 'expo-image-picker';
+
 import { StyleSheet, 
   Text, 
   View, 
@@ -9,8 +16,83 @@ import { StyleSheet,
 } from 'react-native';
 import { useAuth } from '../context/Auth';
 
+/**
+ * 
+ * @returns 
+ */
 export function Home() {
+
+  // pegando os dados do context
   const {user, logout,userLoading} = useAuth();
+  const [imageAvatarPath,setImageAvatarPath] = useState('');
+
+  const userStorageImagemPerfil = '@ifrndo:imagePerfil';
+
+
+  /** Função que abre a opção de escolha de imagem. */
+  async function showImagePicker(){
+    // Pedindo permissão para acessar os arquivos.
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      alert("Não permitiu acesso ao diretório das imagens");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync();
+
+    // Explore the result
+    console.log(result);
+
+    if (!result.cancelled) {
+      setImageAvatarPath(result.uri);
+      //salvando a imagem
+      await AsyncStorage.setItem(userStorageImagemPerfil,  result.uri  );
+      console.log(result.uri);
+    }
+  }
+
+
+  // Funcao para abrir câmera.
+  async function openCamera() {
+  
+    // Ask the user for the permission to access the camera
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      alert("You've refused to allow this appp to access your camera!");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync();
+
+    // Explore the result
+    console.log(result);
+
+    if (!result.cancelled) {
+      setImageAvatarPath(result.uri);
+
+      //salvando a imagem
+      await AsyncStorage.setItem(userStorageImagemPerfil, result.uri );
+      console.log(result.uri);
+    }
+  }
+
+  //carregando a imagem.
+  useEffect(() => {
+    
+    async function loadImagem() {
+      const urlPhoto = await AsyncStorage.getItem(userStorageImagemPerfil);
+      
+      if(urlPhoto){
+        console.log("Imagem: " + urlPhoto);
+        setImageAvatarPath(urlPhoto); // set state
+      }
+    }
+    
+    loadImagem();
+
+  },[]);
 
   
   if(userLoading){
@@ -48,7 +130,21 @@ export function Home() {
 
       </View>
 
-      
+      <View style={styles.imagemConf}>
+        <Text style={styles.textConfig}>Selecionar Imagem</Text>    
+        <Image
+              style={ styles.imageAvatar}
+              source={{ uri:  (imageAvatarPath ?  imageAvatarPath :user.photo) }}
+          />
+        <View style={styles.viewButtonCamera}>
+          <TouchableOpacity onPress={openCamera}>
+              <AntDesign name="camera" size={35} color="#1DB863" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={showImagePicker}>
+            <Entypo name="folder-images" size={35} color="#1DB863" />
+          </TouchableOpacity>
+        </View>
+      </View> 
     </View>
   );
 }
@@ -58,6 +154,26 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
+  },
+  imagemConf:{
+    marginTop: 20,
+    width: "100%",
+    alignItems: "center"
+  },
+  textConfig:{
+      margin: 20,
+      fontSize: 20,
+
+  },
+  imageAvatar:{
+    width: 150,
+    height: 150,
+    borderRadius: 70,
+  },
+  viewButtonCamera:{
+    width: '40%',
+    flexDirection:'row',
+    justifyContent: 'space-around',
   },
   dataHeader:{
     alignItems: 'center',

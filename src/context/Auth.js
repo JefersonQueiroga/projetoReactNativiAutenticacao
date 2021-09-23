@@ -15,6 +15,11 @@ function AuthProvider({children}){
 
     const userStorageKey = '@ifrndo:user';
 
+    /**
+     * Método que realiza o login com suap
+     * @param {*} matricula 
+     * @param {*} password 
+     */
     async function signWithSUAP(matricula, password){
         var params = new URLSearchParams();
         params.append('username', matricula);
@@ -32,6 +37,7 @@ function AuthProvider({children}){
                 }
             } );
            
+            // Response do service do suap
             const {id,nome_usual, email,url_foto_75x100} = responseUser.data;
             
             const userLogged = {
@@ -41,10 +47,9 @@ function AuthProvider({children}){
                 photo: 'https://suap.ifrn.edu.br/' + url_foto_75x100,
                 type: "suap"                
             }
+            // set state
             setUser(userLogged);
             await AsyncStorage.setItem(userStorageKey, JSON.stringify(userLogged));
-
-            console.log(userLogged);
 
         }catch(error){
             console.log(error);
@@ -80,9 +85,9 @@ function AuthProvider({children}){
             }
 
             setUser(userLogged);
+            // Salvando usuário logado.
             await AsyncStorage.setItem(userStorageKey, JSON.stringify(userLogged));
-
-            console.log(userLogged);
+        
         }
         
         }catch(error){
@@ -97,13 +102,17 @@ function AuthProvider({children}){
         await AsyncStorage.removeItem(userStorageKey);
     }
 
+
+    /**
+     * Carregando os dados dos usuário que já realizou login.
+     */
     useEffect(() => {
         async function loadUserStorageDate() {
           const userStoraged = await AsyncStorage.getItem(userStorageKey);
           
           if(userStoraged){
             const userLogged = JSON.parse(userStoraged);
-            setUser(userLogged);
+            setUser(userLogged); // set state
           }
         }
         
@@ -119,10 +128,14 @@ function AuthProvider({children}){
     )
 }
 
+/**
+ * Função que retorna o contexto
+ * @returns 
+ */
 function useAuth(){
     const context= useContext(AuthContext);
   
     return context;
-  }
+}
   
-  export { AuthProvider, useAuth }
+export { AuthProvider, useAuth }
